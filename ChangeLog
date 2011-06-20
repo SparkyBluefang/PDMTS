@@ -1,2 +1,47 @@
 Version next
+* More to S4E build system. Support install.rdf localization.
 
+Version 2011.03.21.22
+* Added locales fr, zh-CN
+
+Version 2011.03.07.00
+* Added locales de, el, pt-BR, sr, sv-SE
+
+Version 2010.09.12.18
+* Handle when null request data is passed to the network state listener.
+
+Version 2010.09.12.01
+* Default log verbosity is now "Info" (was previously "Warning")
+* Simplify timestamp caching during download
+* Support localization of both the preference UI and logging output
+* Support Private Browsing. When private browsing, only show "Error" and "Warning" messages in the log. Also, do not show any download information (source URL and download destination)
+* Added a preference to hide download information in the log
+
+Version 2010.09.08.22
+* Make sure debug output is still shown if the HTTP header is missing (catch the exception)
+* Ignore files downloaded by Save Page As "Web Page, complete". It uses a different mechanism, file information is not available through the download manager, and it changes the downloaded page (invalidating the server's modification time).
+
+Version 2010.09.08.18
+* Fixed the "Windows bug" with browser.download.manager.scanWhenDone (see Bug 593553 (https://bugzilla.mozilla.org/show_bug.cgi?id=593553)). If you changed browser.download.manager.scanWhenDone to work around this bug, you can now change it back.
+
+Version 2010.09.07.03
+* Add support for Firefox 3.5+ and SeaMonkey 2.0
+
+Version 2010.09.04.02
+* Add some more debugging messages
+
+Version 2010.09.01.19
+* Added proper logging infrastructure and a preference to control verbosity.
+* Added back the extension's options dialog. Can now be enabled/disabled in the extension's options dialog and in the downloads section of the application's options dialog.
+
+Version 2010.08.31.20
+* Add preference to SeaMonkey download preferences.
+
+Version 2010.08.31.19
+* Minor name change
+* Move the preference to be with the rest of the download options in the main Firefox preferences
+
+Version 2010.08.31
+Initial Release
+* Basic functionality
+* Preference to enable/disable during runtime

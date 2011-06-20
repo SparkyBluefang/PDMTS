@@ -10,7 +10,7 @@ rdf: install.manifest
 	./genManifest.py
 
 zip:
-	zip -r status4evar-$(VERSION)-fx.xpi \
+	zip -r pdmts-$(VERSION)-fx.xpi \
 		chrome \
 		defaults \
 		modules \
