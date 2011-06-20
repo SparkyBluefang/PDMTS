@@ -1,0 +1,10 @@
+<!ENTITY pdmts.window.title "Preferências do PDMTS">
+<!ENTITY pdmts.behavior.caption "Procedimento do Download">
+<!ENTITY pdmts.enabled.label "Preservar horários de modificação do arquivo quando possível">
+<!ENTITY pdmts.logging.caption "Registro">
+<!ENTITY pdmts.logLevel.label "Termos do Registro:">
+<!ENTITY pdmts.logLevel.error "0 - Erro">
+<!ENTITY pdmts.logLevel.warning "1 - Aviso">
+<!ENTITY pdmts.logLevel.info "2 - Informação">
+<!ENTITY pdmts.logLevel.debug "3 - Debug">
+<!ENTITY pdmts.logPaths.label "Incluir localizações da fonte e destino do download">

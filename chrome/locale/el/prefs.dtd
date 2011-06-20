@@ -1,0 +1,10 @@
+<!ENTITY pdmts.window.title "Προτιμήσεις PDMTS">
+<!ENTITY pdmts.behavior.caption "Συμπεριφορά κατά τη λήψη">
+<!ENTITY pdmts.enabled.label "Διατήρηση χρόνου τροποποίησης αρχείου όταν αυτό είναι δυνατόν">
+<!ENTITY pdmts.logging.caption "Καταγραφή">
+<!ENTITY pdmts.logLevel.label "Επίπεδο λεπτομερειών:">
+<!ENTITY pdmts.logLevel.error "0 - Σφάλματα">
+<!ENTITY pdmts.logLevel.warning "1 - Προειδοποιήσεις">
+<!ENTITY pdmts.logLevel.info "2 - Πληροφορίες">
+<!ENTITY pdmts.logLevel.debug "3 - Αποσφαλμάτωση">
+<!ENTITY pdmts.logPaths.label "Συμπερίληψη τοποθεσιών πηγής λήψης και προορισμού">

@@ -1,0 +1,20 @@
+content		pdmts		chrome/content/
+
+locale		pdmts	en-US	chrome/locale/en-US/
+locale		pdmts	de	chrome/locale/de/
+locale		pdmts	el	chrome/locale/el/
+locale		pdmts	fr	chrome/locale/fr/
+locale		pdmts	pt-BR	chrome/locale/pt-BR/
+locale		pdmts	sr	chrome/locale/sr/
+locale		pdmts	sv-SE	chrome/locale/sv-SE/
+locale		pdmts	zh-CN	chrome/locale/zh-CN/
+
+resource	pdmts		modules/
+
+overlay	chrome://browser/content/preferences/main.xul		chrome://pdmts/content/prefsOverlayFx.xul	application={ec8030f7-c20a-464f-9b0e-13a3a9e97384}
+overlay	chrome://communicator/content/pref/pref-download.xul	chrome://pdmts/content/prefsOverlaySm.xul	application={92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}
+
+component {7831d108-609c-4d69-8d19-cb885e343812} components/pdmts.js
+contract @caligonstudios.com/pdmts;1 {7831d108-609c-4d69-8d19-cb885e343812}
+category profile-after-change PDMTS @caligonstudios.com/pdmts;1
+

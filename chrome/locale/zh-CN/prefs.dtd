@@ -1,0 +1,10 @@
+<!ENTITY pdmts.window.title "PDMTS 首选项">
+<!ENTITY pdmts.behavior.caption "下载行为">
+<!ENTITY pdmts.enabled.label "尽可能的保留文件的修改时间">
+<!ENTITY pdmts.logging.caption "正在记录">
+<!ENTITY pdmts.logLevel.label "日志详细程度：">
+<!ENTITY pdmts.logLevel.error "0 - 错误">
+<!ENTITY pdmts.logLevel.warning "1 - 警告">
+<!ENTITY pdmts.logLevel.info "2 - 信息">
+<!ENTITY pdmts.logLevel.debug "3 - 调试">
+<!ENTITY pdmts.logPaths.label "包含下载源和目标位置">

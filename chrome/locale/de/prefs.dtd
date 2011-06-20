@@ -1,0 +1,10 @@
+<!ENTITY pdmts.window.title "Preserve Download Modification Timestamp - Einstellungen">
+<!ENTITY pdmts.behavior.caption "Downloadverhalten">
+<!ENTITY pdmts.enabled.label "Falls verfügbar letzte Änderungszeit vom Server übernehmen">
+<!ENTITY pdmts.logging.caption "Protokollierung">
+<!ENTITY pdmts.logLevel.label "Protokollierungsniveau:">
+<!ENTITY pdmts.logLevel.error "0 - Fehler">
+<!ENTITY pdmts.logLevel.warning "1 - Warnungen">
+<!ENTITY pdmts.logLevel.info "2 - Mitteilungen">
+<!ENTITY pdmts.logLevel.debug "3 - Interne Abläufe">
+<!ENTITY pdmts.logPaths.label "Downloadquellen und lokale Speicherorte anzeigen">

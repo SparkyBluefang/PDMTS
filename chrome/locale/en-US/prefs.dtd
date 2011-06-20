@@ -1,0 +1,13 @@
+<!ENTITY pdmts.window.title "PDMTS Preferences">
+
+<!ENTITY pdmts.behavior.caption "Download Behavior">
+<!ENTITY pdmts.enabled.label "Preserve file modification times when possible">
+
+<!ENTITY pdmts.logging.caption "Logging">
+<!ENTITY pdmts.logLevel.label "Log verbosity:">
+<!ENTITY pdmts.logLevel.error "0 - Error">
+<!ENTITY pdmts.logLevel.warning "1 - Warning">
+<!ENTITY pdmts.logLevel.info "2 - Info">
+<!ENTITY pdmts.logLevel.debug "3 - Debug">
+<!ENTITY pdmts.logPaths.label "Include download source and destination locations">
+

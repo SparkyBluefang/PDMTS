@@ -1,0 +1,10 @@
+<!ENTITY pdmts.window.title "Préférences de PDMTS">
+<!ENTITY pdmts.behavior.caption "Comportement du téléchargement">
+<!ENTITY pdmts.enabled.label "Préserver la date et l'heure de modification de fichier si possible">
+<!ENTITY pdmts.logging.caption "Données">
+<!ENTITY pdmts.logLevel.label "Type de données :">
+<!ENTITY pdmts.logLevel.error "0 - Erreurs">
+<!ENTITY pdmts.logLevel.warning "1 - Avertissements">
+<!ENTITY pdmts.logLevel.info "2 - Infos">
+<!ENTITY pdmts.logLevel.debug "3 - Débogage">
+<!ENTITY pdmts.logPaths.label "Ajouter l'emplacement de la source et de la destination du téléchargement">

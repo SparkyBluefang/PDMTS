@@ -1,0 +1,10 @@
+<!ENTITY pdmts.window.title "PDMTS подешавања">
+<!ENTITY pdmts.behavior.caption "Понашање преузимања">
+<!ENTITY pdmts.enabled.label "Сачувај време измене, кад је могуће">
+<!ENTITY pdmts.logging.caption "Вођење евиденције">
+<!ENTITY pdmts.logLevel.label "Вођење евиденције о опширности">
+<!ENTITY pdmts.logLevel.error "0 - грешка">
+<!ENTITY pdmts.logLevel.warning "1 - упозорење">
+<!ENTITY pdmts.logLevel.info "2- информација">
+<!ENTITY pdmts.logLevel.debug "3- отклањање грешака">
+<!ENTITY pdmts.logPaths.label "Обухвати извор преузимања и одредиште">
