@@ -1,5 +1,5 @@
 <!ENTITY pdmts.window.title "Inställningar för PDMTS">
-<!ENTITY pdmts.behavior.caption "Nerladdningsbeteende">
+<!ENTITY pdmts.behavior.caption "Hämtningsbeteende">
 <!ENTITY pdmts.enabled.label "Bevara om möjligt filers datum för senaste ändring">
 <!ENTITY pdmts.logging.caption "Loggning">
 <!ENTITY pdmts.logLevel.label "Loggningsomfång:">
@@ -7,4 +7,4 @@
 <!ENTITY pdmts.logLevel.warning "1 - Varning">
 <!ENTITY pdmts.logLevel.info "2 - Info">
 <!ENTITY pdmts.logLevel.debug "3 - Felsök">
-<!ENTITY pdmts.logPaths.label "Inkludera hämtningens källa och målplatser">
+<!ENTITY pdmts.logPaths.label "Inkludera hämtningens käll- och målplatser">

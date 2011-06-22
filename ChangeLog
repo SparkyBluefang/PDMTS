@@ -1,5 +1,6 @@
 Version next
 * More to S4E build system. Support install.rdf localization.
+* Updated translations for: sv-SE
 
 Version 2011.03.21.22
 * Added locales fr, zh-CN
