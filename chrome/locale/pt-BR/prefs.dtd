@@ -6,5 +6,5 @@
 <!ENTITY pdmts.logLevel.error "0 - Erro">
 <!ENTITY pdmts.logLevel.warning "1 - Aviso">
 <!ENTITY pdmts.logLevel.info "2 - Informação">
-<!ENTITY pdmts.logLevel.debug "3 - Debug">
+<!ENTITY pdmts.logLevel.debug "3 - Depuração">
 <!ENTITY pdmts.logPaths.label "Incluir localizações da fonte e destino do download">

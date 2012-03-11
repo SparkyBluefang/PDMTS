@@ -1,0 +1,10 @@
+<!ENTITY pdmts.window.title "PDMTS 設定">
+<!ENTITY pdmts.behavior.caption "ダウンロード動作">
+<!ENTITY pdmts.enabled.label "可能な場合ファイルの更新日時を保持します">
+<!ENTITY pdmts.logging.caption "ログ">
+<!ENTITY pdmts.logLevel.label "ログレベル:">
+<!ENTITY pdmts.logLevel.error "0 - エラー">
+<!ENTITY pdmts.logLevel.warning "1 - 警告">
+<!ENTITY pdmts.logLevel.info "2 - 情報">
+<!ENTITY pdmts.logLevel.debug "3 - デバッグ">
+<!ENTITY pdmts.logPaths.label "ダウンロード元と保存先を含めます">

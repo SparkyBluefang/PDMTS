@@ -43,6 +43,7 @@ locale	pdmts	en-US	chrome/locale/en-US/
 locale	pdmts	de	chrome/locale/de/
 locale	pdmts	el	chrome/locale/el/
 locale	pdmts	fr	chrome/locale/fr/
+locale	pdmts	ja-JP	chrome/locale/ja-JP/
 locale	pdmts	pt-BR	chrome/locale/pt-BR/
 locale	pdmts	sr	chrome/locale/sr/
 locale	pdmts	sv-SE	chrome/locale/sv-SE/
