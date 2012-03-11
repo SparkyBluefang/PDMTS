@@ -1,4 +1,7 @@
 *.xpi
 install.rdf
 components/*.xpt
-release/
+res/
+components/cache/
+xpidl_debug
+

@@ -1,0 +1,145 @@
+#!/usr/bin/python
+
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1/GPL 2.0/LGPL 2.1
+#
+# The contents of this file are subject to the Mozilla Public License Version
+# 1.1 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+# 
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is Status-4-Evar.
+#
+# The Initial Developer of the Original Code is 
+# Matthew Turnbull <sparky@bluefang-logic.com>.
+#
+# Portions created by the Initial Developer are Copyright (C) 2011
+# the Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#
+# Alternatively, the contents of this file may be used under the terms of
+# either the GNU General Public License Version 2 or later (the "GPL"), or
+# the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+# in which case the provisions of the GPL or the LGPL are applicable instead
+# of those above. If you wish to allow use of your version of this file only
+# under the terms of either the GPL or the LGPL, and not to allow others to
+# use your version of this file under the terms of the MPL, indicate your
+# decision by deleting the provisions above and replace them with the notice
+# and other provisions required by the GPL or the LGPL. If you do not delete
+# the provisions above, a recipient may use your version of this file under
+# the terms of any one of the MPL, the GPL or the LGPL.
+#
+# ***** END LICENSE BLOCK *****
+
+import sys
+import re
+import os
+import codecs
+import magic
+
+mdetect = magic.open(magic.MIME_ENCODING)
+mdetect.load()
+
+excludeLocals = ["en-US"]
+
+#
+# Read and decode a file. Use the magic module to determin the character encoding.
+#
+def readFile(filename):
+	ftype = mdetect.file(filename)
+	print "Reading %s as %s" % (filename, ftype)
+	with codecs.open(filename, mode="r", encoding=ftype) as f:
+		return f.read();
+
+#
+# Write a file as UTF-8.
+#
+def writeFile(filename, contents):
+	with codecs.open(filename, mode="w", encoding="utf-8") as f:
+		f.write(contents)
+
+#
+# Clean a file. Read it, strip blank lines and comments, then write it.
+#
+reNewLine     = re.compile(r'''[\r\n]+''')
+
+rePROPComment = re.compile(r'''^\s*#.*?\s*\n''', re.M)
+rePROPEscapes = re.compile(r'''\\(\\n|'|")''')
+rePROPNewLine = re.compile(r'''\\\\\n''', re.M)
+
+reDTDComment  = re.compile(r'''^\s*<!--.*?-->\s*\n''', re.M | re.S)
+reDTDEscapes  = re.compile(r'''\\(\\n|'|"|&)''')
+reDTDNewLine  = re.compile(r'''\s*(\\\n|\\n)\s*''', re.M)
+
+def cleanFile(filename):
+	contents = readFile(filename)
+
+	contents = reNewLine.sub("\n", contents)
+
+	if filename.endswith(".dtd"):
+		contents = reDTDComment.sub("", contents)
+		contents = reDTDEscapes.sub("\\1", contents)
+		contents = reDTDNewLine.sub("\n", contents)
+	elif filename.endswith(".properties"):
+		contents = rePROPComment.sub("", contents)
+		contents = rePROPEscapes.sub("\\1", contents)
+		contents = rePROPNewLine.sub("\\\n", contents)
+
+	writeFile(filename, contents)
+
+#
+# Remove a translation from a file
+#
+rePROPStringStr = "^\s*%s=.*?\s*\n"
+reDTDStringStr = "^\s*<!ENTITY %s \".*?\">\s*\n"
+def removeString(filename, tString):
+	reStr = None
+	if filename.endswith(".dtd"):
+		reStr = reDTDStringStr % tString
+	elif filename.endswith(".properties"):
+		reStr = rePROPStringStr % tString
+
+	if reStr:
+		contents = readFile(filename)
+		reString = re.compile(reStr, re.U | re.M)
+		contents = reString.sub("", contents)
+		writeFile(filename, contents)
+
+#
+# Walk though the local directory, processing DTD and property files.
+#
+def processL10N(mode, tFile=None, tString=None):
+	for root, dirs, files in os.walk("chrome/locale"):
+		if os.path.basename(root) == "locale":
+			for exclusion in excludeLocals:
+				dirs.remove(exclusion)
+			dirs.sort()
+			continue;
+
+		print "Locale %s" % os.path.basename(root)
+
+		files.sort()
+
+		if mode == "clean":
+			for filename in files:
+				cleanFile(os.path.join(root, filename))
+		elif mode == "remove":
+			for filename in files:
+				if filename == tFile:
+					removeString(os.path.join(root, filename), tString)
+
+if __name__ == "__main__":
+	mode = sys.argv[1]
+	if mode == "clean":
+		processL10N("clean")
+	elif mode == "remove":
+		processL10N("remove", sys.argv[2], sys.argv[3].replace(".", "\\."))
+	else:
+		print "Unknown option '%s'" % mode
+

@@ -1,0 +1,221 @@
+#!/usr/bin/python
+
+# ***** BEGIN LICENSE BLOCK *****
+# Version: MPL 1.1/GPL 2.0/LGPL 2.1
+#
+# The contents of this file are subject to the Mozilla Public License Version
+# 1.1 (the "License"); you may not use this file except in compliance with
+# the License. You may obtain a copy of the License at
+# http://www.mozilla.org/MPL/
+# 
+# Software distributed under the License is distributed on an "AS IS" basis,
+# WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+# for the specific language governing rights and limitations under the
+# License.
+#
+# The Original Code is Status-4-Evar.
+#
+# The Initial Developer of the Original Code is 
+# Matthew Turnbull <sparky@bluefang-logic.com>.
+#
+# Portions created by the Initial Developer are Copyright (C) 2011
+# the Initial Developer. All Rights Reserved.
+#
+# Contributor(s):
+#
+# Alternatively, the contents of this file may be used under the terms of
+# either the GNU General Public License Version 2 or later (the "GPL"), or
+# the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+# in which case the provisions of the GPL or the LGPL are applicable instead
+# of those above. If you wish to allow use of your version of this file only
+# under the terms of either the GPL or the LGPL, and not to allow others to
+# use your version of this file under the terms of the MPL, indicate your
+# decision by deleting the provisions above and replace them with the notice
+# and other provisions required by the GPL or the LGPL. If you do not delete
+# the provisions above, a recipient may use your version of this file under
+# the terms of any one of the MPL, the GPL or the LGPL.
+#
+# ***** END LICENSE BLOCK *****
+
+import re
+import os
+import codecs
+from xml.sax.saxutils import escape
+
+propRE = re.compile(ur"^\s*([a-zA-Z.]+)\s*=\s*(.+?)\s*(#.*)?$")
+targetIds = {
+	"Firefox": "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}",
+	"SeaMonkey": "{92650c4d-4b8e-4d2a-b7eb-24ecf4f6b63a}"
+}
+
+def parsePropFile(filename):
+	props = {}
+
+	with codecs.open(filename, mode="r", encoding="utf-8") as f:
+		for line in f:
+			result = propRE.search(line)
+			if result:
+				props[result.group(1)] = result.group(2)
+
+	return props
+
+def parseL10N(l10nDir):
+	langs = {}
+
+	for l10n in os.listdir(l10nDir):
+		l10nMeta = os.path.join(l10nDir, l10n, "meta.properties")
+		if os.path.isfile(l10nMeta):
+			langs[l10n] = parsePropFile(l10nMeta)
+		else:
+			print "WARNING: could not find %s" % l10nMeta
+
+	return langs
+
+def getConfig():
+	props = parsePropFile("install.manifest")
+	langs = parseL10N("chrome/locale/")
+
+	defaultLocale = langs[props["defaultLocale"]]
+	del langs[props["defaultLocale"]]
+	del props["defaultLocale"]
+
+	info = {}
+	targets = {}
+
+	for prop in props:
+			if prop in targetIds:
+				v = props[prop].split('|')
+				target = {
+					"id": targetIds[prop],
+					"min": v[0],
+					"max": v[1]
+				}
+				targets[prop] = target
+				continue;
+
+			info[prop] = props[prop]
+
+	info["name"] = defaultLocale["name"]
+	info["description"] = defaultLocale["description"]
+
+	return (info, targets, langs)
+
+def buildManafest():
+	(info, targets, locales) = getConfig()
+	f = codecs.open("install.rdf", mode="w", encoding="utf-8")
+
+	#
+	# Print the header
+	#
+	f.write(u"""<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ***** BEGIN LICENSE BLOCK *****
+   - Version: MPL 1.1/GPL 2.0/LGPL 2.1
+   -
+   - The contents of this file are subject to the Mozilla Public License Version
+   - 1.1 (the "License"); you may not use this file except in compliance with
+   - the License. You may obtain a copy of the License at
+   - http://www.mozilla.org/MPL/
+   - 
+   - Software distributed under the License is distributed on an "AS IS" basis,
+   - WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+   - for the specific language governing rights and limitations under the
+   - License.
+   -
+   - The Original Code is Status-4-Evar.
+   -
+   - The Initial Developer of the Original Code is 
+   - Matthew Turnbull <sparky@bluefang-logic.com>.
+   -
+   - Portions created by the Initial Developer are Copyright (C) 2011
+   - the Initial Developer. All Rights Reserved.
+   -
+   - Contributor(s):
+   -
+   - Alternatively, the contents of this file may be used under the terms of
+   - either the GNU General Public License Version 2 or later (the "GPL"), or
+   - the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+   - in which case the provisions of the GPL or the LGPL are applicable instead
+   - of those above. If you wish to allow use of your version of this file only
+   - under the terms of either the GPL or the LGPL, and not to allow others to
+   - use your version of this file under the terms of the MPL, indicate your
+   - decision by deleting the provisions above and replace them with the notice
+   - and other provisions required by the GPL or the LGPL. If you do not delete
+   - the provisions above, a recipient may use your version of this file under
+   - the terms of any one of the MPL, the GPL or the LGPL.
+   - 
+   - ***** END LICENSE BLOCK ***** -->
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+	<Description about="urn:mozilla:install-manifest">\n""")
+
+	#
+	# Print extension info blocks
+	#
+
+	f.write(u"""
+		<!-- Info -->\n""")
+
+	keys = info.keys()
+	keys.sort()
+	for prop in keys:
+		f.write(u"""
+		<em:%s>%s</em:%s>""" % (prop, escape(info[prop]), prop))
+	f.write(u"""\n""")
+
+	#
+	# Print the locale blocks
+	#
+
+	f.write(u"""
+		<!-- Localizations -->\n""")
+
+	keys = locales.keys()
+	keys.sort()
+	for locale in keys:
+		l10n = locales[locale]
+		for t in l10n["translator"].split(","):
+			f.write(u"""
+		<em:translator>%s [%s]</em:translator>""" % (escape(t.strip()), locale))
+		f.write(u"""
+		<em:localized><!-- %s -->
+			<Description>
+				<em:locale>%s</em:locale>
+				<em:name>%s</em:name>
+				<em:description>%s</em:description>
+				<em:creator>%s</em:creator>
+				<em:homepageURL>%s</em:homepageURL>
+			</Description>
+		</em:localized>\n""" % (locale, locale, escape(l10n["name"]), escape(l10n["description"]), escape(info["creator"]), escape(info["homepageURL"])))
+
+	#
+	# Print target blocks
+	#
+
+	f.write(u"""
+		<!-- Targets -->\n""")
+
+	keys = targets.keys()
+	keys.sort()
+	for t in keys:
+		target = targets[t]
+		f.write(u"""
+		<em:targetApplication><!-- %s -->
+			<Description>
+				<em:id>%s</em:id>
+				<em:minVersion>%s</em:minVersion>
+				<em:maxVersion>%s</em:maxVersion>
+			</Description>
+		</em:targetApplication>\n""" % (t, target["id"], target["min"], target["max"]))
+
+	#
+	# Print the footer
+	#
+
+	f.write("""
+	</Description>
+</RDF>\n""")
+
+if __name__ == "__main__":
+	buildManafest()
+

@@ -1,3 +1,5 @@
+#!/bin/sh
+
 # ***** BEGIN LICENSE BLOCK *****
 # Version: MPL 1.1/GPL 2.0/LGPL 2.1
 #
@@ -11,7 +13,7 @@
 # for the specific language governing rights and limitations under the
 # License.
 #
-# The Original Code is Preserve Download Modification Timestamp.
+# The Original Code is Status-4-Evar.
 #
 # The Initial Developer of the Original Code is 
 # Matthew Turnbull <sparky@bluefang-logic.com>.
@@ -35,15 +37,74 @@
 #
 # ***** END LICENSE BLOCK *****
 
-type=2
-id=pdmts@caligonstudios.com
-version=2011.03.21.22
-creator=Sparky Bluefang
-optionsURL=chrome://pdmts/content/prefs.xul
-homepageURL=http://forums.mozillazine.org/viewtopic.php?f=48&t=1984565
+VALID=""
+HELP=""
+VERSION=`date +%Y.%m.%d.%H`
+VERSION_BUMP=""
 
-defaultLocale=en-US
+case "$1" in
+	-a|--alpha)
+		VERSION="${VERSION}a"
+		VERSION_BUMP="1"
+		VALID="1"
+		;;
+	-b|--beta)
+		VERSION="${VERSION}b"
+		VALID="1"
+		;;
+	-p|--pre)
+		VERSION="${VERSION}pre"
+		VERSION_BUMP="1"
+		VALID="1"
+		;;
+	-r|--release)
+		VALID="1"
+		;;
+	-h|--help)
+		HELP="1"
+		VALID="1"
+		;;
+esac
 
-Firefox=3.5|13.0a1
-SeaMonkey=2.0|2.10a1
+EXIT=0
+if [ -z "${VALID}" ]; then
+	echo "Invalid action: '${1}'"
+	EXIT=1
+fi
+if [ -z "${VALID}" ] || [ -n "${HELP}" ]; then
+	echo "Options:"
+	echo " -a --alpha   Alpha version bump"
+	echo " -b --beta    Beta release"
+	echo " -p --pre     Pre version bump"
+	echo " -r --release Final release"
+	echo " -h --help    Print this help message"
+	echo ""
+	echo "Version bumps will just modify the install.manifest and commit the changes. Releases will also modify the ChangeLog and tag the commit."
+	exit $EXIT
+fi
+
+# Check for uncommitted changes
+CHANGES=`git diff HEAD --exit-code --name-only`
+if [ $? -ne 0 ]; then
+	echo "There are uncommitted changes:"
+	echo "${CHANGES}"
+	exit 1
+fi
+
+# Up the version
+sed -i "/^version=/s/=.*$/=${VERSION}/g" install.manifest
+git add install.manifest
+
+if [ -z "${VERSION_BUMP}" ]; then
+	# Update the ChangeLog
+	sed -i "/^Version /s/ next$/ next\n\nVersion ${VERSION}/g" ChangeLog
+	git add ChangeLog
+
+	# Commit and tag the release
+	git commit -m "Release ${VERSION}"
+	git tag "${VERSION}"
+else
+	# Commit
+	git commit -m "Version bump ${VERSION}"
+fi
 
