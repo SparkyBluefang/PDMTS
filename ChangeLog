@@ -1,4 +1,6 @@
 Version next
+
+Version 2013.05.11.19b
 * Drop support for Firefox 19 and older.
 * Drop support for SeaMonkey 2.16 and older.
 * Add support for per-window peivate browsing changes in Firefox 20.
