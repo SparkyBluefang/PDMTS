@@ -47,19 +47,9 @@ const LOG_WARNING	= 1;
 const LOG_ERROR		= 0;
 
 CU.import("resource://gre/modules/XPCOMUtils.jsm");
+CU.import("resource://gre/modules/Services.jsm");
 
-function PDMTS()
-{
-	try
-	{
-		CU.import("resource://gre/modules/Services.jsm");
-	}
-	catch(e)
-	{
-		// Gecko 1.9 compat
-		CU.import("resource://pdmts/ServicesCompat.jsm");
-	}
-}
+function PDMTS(){}
 
 PDMTS.prototype =
 {
@@ -74,15 +64,9 @@ PDMTS.prototype =
 	strings:		null,
 	dlManager:		null,
 	isListening:		false,
-	logSanitize:		false,
 	logPaths:		false,
 	logLevel:		LOG_ERROR,
 	dlTS:			{},
-
-	// Gecko 1.9 compat
-	classDescription:	"PDMTS",
-	contractID:		"@caligonstudios.com/pdmts;1",
-	_xpcom_categories:	[{ category: "profile-after-change" }],
 
 	startup: function()
 	{
@@ -91,36 +75,28 @@ PDMTS.prototype =
 		this.dlManager = CC["@mozilla.org/download-manager;1"].getService(CI.nsIDownloadManager);
 
 		Services.obs.addObserver(this, "quit-application", true);
-		Services.obs.addObserver(this, "private-browsing", true);
 		this.prefs.addObserver("enabled", this, true);
 		this.prefs.addObserver("logLevel", this, true);
 		this.prefs.addObserver("logPaths", this, true);
 
 		this.updateLogLevel();
 		this.logPaths = this.prefs.getBoolPref("logPaths");
-		this.log(LOG_INFO, "log.paths", [this.logPaths]);
-		try
-		{
-			this.logSanitize = Components.classes["@mozilla.org/privatebrowsing;1"]
-						.getService(CI.nsIPrivateBrowsingService).privateBrowsingEnabled;
-			this.log(LOG_INFO, "log.clean", [this.logSanitize]);
-		} catch(e) { /* Private browsing not supported */ }
+		this.log(LOG_INFO, false, "log.paths", [this.logPaths]);
 
 		this.updateEnabled();
 
-		this.log(LOG_INFO, "startup");
+		this.log(LOG_INFO, false, "startup");
 	},
 
 	shutdown: function()
 	{
 		Services.obs.removeObserver(this, "quit-application");
-		Services.obs.removeObserver(this, "private-browsing");
 		this.prefs.removeObserver("enabled", this);
 		this.prefs.removeObserver("logLevel", this);
 		this.prefs.removeObserver("logPaths", this);
 		this.stopListening();
 
-		this.log(LOG_INFO, "shutdown");
+		this.log(LOG_INFO, false, "shutdown");
 
 		this.prefs = null;
 		this.strings = null;
@@ -149,20 +125,7 @@ PDMTS.prototype =
 						break;
 					case "logPaths":
 						this.logPaths = this.prefs.getBoolPref("logPaths");
-						this.log(LOG_INFO, "log.paths", [this.logPaths]);
-						break;
-				}
-				break;
-			case "private-browsing":
-				switch(data)
-				{
-					case "enter":
-						this.log(LOG_INFO, "log.clean", [true]);
-						this.logSanitize = true;
-						break;
-					case "exit":
-						this.logSanitize = false;
-						this.log(LOG_INFO, "log.clean", [false]);
+						this.log(LOG_INFO, false, "log.paths", [this.logPaths]);
 						break;
 				}
 				break;
@@ -171,9 +134,13 @@ PDMTS.prototype =
 
 	// nsIDownloadProgressListener
 	onSecurityChange: function(prog, req, state, dl) {},
+
 	onProgressChange: function(prog, req, prog, progMax, tProg, tProgMax, dl) {},
+
 	onStateChange: function(prog, req, flags, status, dl)
 	{
+		let isPrivate = dl.isPrivate;
+
 		// We only want to look at the URI we know about
 		// Basically, ignore "Web page, complete" downloads
 		// Also handle case where req is null
@@ -183,7 +150,7 @@ PDMTS.prototype =
 			return;
 		}
 
-		this.log(LOG_DEBUG, "net.stat", [flags.toString(16), status], req.URI.spec);
+		this.log(LOG_DEBUG, isPrivate, "net.stat", [flags.toString(16), status], req.URI.spec);
 
 		// Only rely on STATE_START and STATE_STOP... and STATE_STOP might come
 		// after DOWNLOAD_FINISHED. So wait for STATE_START.
@@ -196,7 +163,7 @@ PDMTS.prototype =
 		let f = dl.targetFile;
 		if(!f)
 		{
-			this.log(LOG_ERROR, "dl.notarget");
+			this.log(LOG_ERROR, isPrivate, "dl.notarget");
 			return;
 		}
 
@@ -219,12 +186,12 @@ PDMTS.prototype =
 				} catch(e) { /* Ignore missing/malformed header errors */ }
 			}
 
-			this.log(LOG_INFO, "net.http", null, f.path);
+			this.log(LOG_INFO, isPrivate, "net.http", null, f.path);
 		}
 		else if(req instanceof CI.nsIFileChannel)
 		{
 			d = req.file.lastModifiedTime;
-			this.log(LOG_INFO, "net.file", null, f.path);
+			this.log(LOG_INFO, isPrivate, "net.file", null, f.path);
 		}
 		else if(req instanceof CI.nsIFTPChannel)
 		{
@@ -233,26 +200,29 @@ PDMTS.prototype =
 			{	// This is silly.
 				d /= 1000;
 			}
-			this.log(LOG_INFO, "net.ftp", null, f.path);
+			this.log(LOG_INFO, isPrivate, "net.ftp", null, f.path);
 		}
 
 		// If we have a valid timestamp, save it
 		if(d && d > 0)
 		{
-			this.dlTS[dl.id] = d;
+			this.dlTS[dl.guid] = d;
 		}
 	},
+
 	onDownloadStateChange: function(state, dl)
 	{
+		let isPrivate = dl.isPrivate;
+
 		// Get the download target
 		let f = dl.targetFile;
 		if(!f)
 		{
-			this.log(LOG_ERROR, "dl.notarget");
+			this.log(LOG_ERROR, isPrivate, "dl.notarget");
 			return;
 		}
 
-		this.log(LOG_DEBUG, "dl.stat", [dl.state], f.path);
+		this.log(LOG_DEBUG, isPrivate, "dl.stat", [dl.state], f.path);
 
 		switch(dl.state)
 		{
@@ -265,34 +235,34 @@ PDMTS.prototype =
 			case CI.nsIDownloadManager.DOWNLOAD_BLOCKED_POLICY:
 			case CI.nsIDownloadManager.DOWNLOAD_DIRTY:
 				// The download failed - cleanup
-				this.log(LOG_DEBUG, "dl.failed", null, f.path);
-				delete this.dlTS[dlid];
+				this.log(LOG_DEBUG, isPrivate, "dl.failed", null, f.path);
+				delete this.dlTS[dl.guid];
 			default:
 				// The download is active - do nothing
 				return;
 		}
 
-		this.log(LOG_DEBUG, "dl.finished", null, f.path);
+		this.log(LOG_DEBUG, isPrivate, "dl.finished", null, f.path);
 
 		// Ensure the downloaded target exists
 		if(!f.exists())
 		{
-			this.log(LOG_ERROR, "dl.nofile", null, f.path);
+			this.log(LOG_ERROR, isPrivate, "dl.nofile", null, f.path);
 			return;
 		}
 
 		// Update the modification timestamp
-		let d = this.dlTS[dl.id];
-		delete this.dlTS[dl.id];
+		let d = this.dlTS[dl.guid];
+		delete this.dlTS[dl.guid];
 		if(d)
 		{
 			f.lastModifiedTime = d;
 			d = new Date(d);
-			this.log(LOG_INFO, "dl.updated", [d.toUTCString()], f.path);
+			this.log(LOG_INFO, isPrivate, "dl.updated", [d.toUTCString()], f.path);
 		}
 		else
 		{
-			this.log(LOG_INFO, "dl.unavailable", null, f.path);
+			this.log(LOG_INFO, isPrivate, "dl.unavailable", null, f.path);
 		}
 	},
 
@@ -301,10 +271,10 @@ PDMTS.prototype =
 	{
 		if(!this.isListening)
 		{
-			this.dlManager.addListener(this);
+			this.dlManager.addPrivacyAwareListener(this);
 			this.isListening = true;
 		}
-		this.log(LOG_INFO, "enabled");
+		this.log(LOG_INFO, false, "enabled");
 	},
 
 	// If we're listening for downloads, stop listening.
@@ -315,7 +285,7 @@ PDMTS.prototype =
 			this.dlManager.removeListener(this);
 			this.isListening = false;
 		}
-		this.log(LOG_INFO, "disabled");
+		this.log(LOG_INFO, false, "disabled");
 	},
 
 	// Check the 'enabled' preference and act accordingly.
@@ -348,13 +318,13 @@ PDMTS.prototype =
 		}
 
 		this.logLevel = lvl;
-		this.log(LOG_INFO, "log.level", [this.logLevel]);
+		this.log(LOG_INFO, false, "log.level", [this.logLevel]);
 	},
 
 	// Log a message to the error console
-	log: function(lvl, msgID, args, note)
+	log: function(lvl, isPrivate, msgID, args, note)
 	{
-		let eLogLevel = (this.logSanitize) ? LOG_WARNING : this.logLevel;
+		let eLogLevel = (this.logLevel == LOG_DEBUG || !isPrivate) ? this.logLevel : LOG_WARNING;
 		if(lvl <= eLogLevel)
 		{
 			let msg = "PDMTS: ";
@@ -368,12 +338,11 @@ PDMTS.prototype =
 				msg += this.strings.GetStringFromName(msgID)
 			}
 
-			if(note && !this.logSanitize && (this.logPaths || eLogLevel == LOG_DEBUG))
+			if(note && (eLogLevel == LOG_DEBUG || (!isPrivate && this.logPaths)))
 			{
 				msg += "\n\t" + note
 			}
 
-			dump(msg + "\n");
 			switch(lvl)
 			{
 				case LOG_DEBUG:
@@ -392,9 +361,5 @@ PDMTS.prototype =
 	}
 }
 
-// Export XPCOM symbols
-if (XPCOMUtils.generateNSGetFactory)
-	const NSGetFactory = XPCOMUtils.generateNSGetFactory([PDMTS]);
-else
-	const NSGetModule = XPCOMUtils.generateNSGetModule([PDMTS]);
+const NSGetFactory = XPCOMUtils.generateNSGetFactory([PDMTS]);
 

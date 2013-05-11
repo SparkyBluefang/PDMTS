@@ -1,4 +1,7 @@
 Version next
+* Drop support for Firefox 19 and older.
+* Drop support for SeaMonkey 2.16 and older.
+* Add support for per-window peivate browsing changes in Firefox 20.
 * Add support for X-Archive-Orig-Last-Modified (used on archive.org).
 * Move to S4E build system. Support install.rdf localization.
 * Added locales ja-JP
