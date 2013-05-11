@@ -18,7 +18,7 @@
 # The Initial Developer of the Original Code is 
 # Matthew Turnbull <sparky@bluefang-logic.com>.
 #
-# Portions created by the Initial Developer are Copyright (C) 2011
+# Portions created by the Initial Developer are Copyright (C) 2013
 # the Initial Developer. All Rights Reserved.
 #
 # Contributor(s):
@@ -37,55 +37,62 @@
 #
 # ***** END LICENSE BLOCK *****
 
-VALID=""
-HELP=""
-VERSION=`date +%Y.%m.%d.%H`
-VERSION_BUMP=""
+TS=`date +%Y.%m.%d.%H`
+VERSION=""
+RELEASE=""
+FORCE=""
 
-case "$1" in
-	-a|--alpha)
-		VERSION="${VERSION}a"
-		VERSION_BUMP="1"
-		VALID="1"
-		;;
-	-b|--beta)
-		VERSION="${VERSION}b"
-		VALID="1"
-		;;
-	-p|--pre)
-		VERSION="${VERSION}pre"
-		VERSION_BUMP="1"
-		VALID="1"
-		;;
-	-r|--release)
-		VALID="1"
-		;;
-	-h|--help)
-		HELP="1"
-		VALID="1"
-		;;
-esac
-
-EXIT=0
-if [ -z "${VALID}" ]; then
-	echo "Invalid action: '${1}'"
-	EXIT=1
-fi
-if [ -z "${VALID}" ] || [ -n "${HELP}" ]; then
+usage() {
 	echo "Options:"
 	echo " -a --alpha   Alpha version bump"
 	echo " -b --beta    Beta release"
 	echo " -p --pre     Pre version bump"
 	echo " -r --release Final release"
+	echo " -f --force   Continue even with uncommitted changes (alpha/pre only)"
 	echo " -h --help    Print this help message"
 	echo ""
 	echo "Version bumps will just modify the install.manifest and commit the changes. Releases will also modify the ChangeLog and tag the commit."
-	exit $EXIT
+	exit $1
+}
+
+while [ -n "$1" ]; do
+	case "$1" in
+		-a|--alpha)
+			VERSION="${TS}a"
+			;;
+		-b|--beta)
+			VERSION="${TS}b"
+			RELEASE="1"
+			;;
+		-p|--pre)
+			VERSION="${TS}pre"
+			;;
+		-r|--release)
+			VERSION="${TS}"
+			RELEASE="1"
+			;;
+		-f|--force)
+			FORCE="1"
+			;;
+		-h|--help)
+			usage 0
+			;;
+		default)
+			echo "Invalid action: '$1'"
+			usage 1
+			;;
+	esac
+
+	shift
+done
+
+if [ -z "$VERSION" ]; then
+	usage 1
 fi
 
 # Check for uncommitted changes
 CHANGES=`git diff HEAD --exit-code --name-only`
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ] && ( [ -n "$RELEASE" ] || [ -z "$FORCE" ] ); then
 	echo "There are uncommitted changes:"
 	echo "${CHANGES}"
 	exit 1
@@ -95,7 +102,7 @@ fi
 sed -i "/^version=/s/=.*$/=${VERSION}/g" install.manifest
 git add install.manifest
 
-if [ -z "${VERSION_BUMP}" ]; then
+if [ -n "${RELEASE}" ]; then
 	# Update the ChangeLog
 	sed -i "/^Version /s/ next$/ next\n\nVersion ${VERSION}/g" ChangeLog
 	git add ChangeLog

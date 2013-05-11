@@ -16,7 +16,7 @@
 # The Initial Developer of the Original Code is 
 # Matthew Turnbull <sparky@bluefang-logic.com>.
 #
-# Portions created by the Initial Developer are Copyright (C) 2011
+# Portions created by the Initial Developer are Copyright (C) 2013
 # the Initial Developer. All Rights Reserved.
 #
 # Contributor(s):
@@ -45,14 +45,16 @@ RM         = rm
 MKDIR      = mkdir
 ZIP        = zip
 ECHO       = echo
+PY         = env python2
 
-XRSDK      = $(shell $(LS) -d /opt/xulrunner-sdk-* | $(SORT) -V | $(TAIL) -1)
+XRSDK      = $(shell $(LS) -d /opt/mozilla/xulrunner-sdk-* | $(SORT) -V | $(TAIL) -1)
 XRSDK_VERS = $(shell $(GREP) "^Milestone=" $(XRSDK)/bin/platform.ini | $(CUT) -d"=" -f2 | $(CUT) -d"." -f1)
-TYPELIB_PY = $(shell $(EXPR) $(XRSDK_VERS) \>= 11)
-
-VERSION    = $(shell $(GREP) "^version=" install.manifest | $(CUT) -d"=" -f2)
-XPT_FILES  = $(patsubst %.idl,%.xpt,$(wildcard components/*.idl))
 TLIB_CACHE = components/cache
+
+NAME       = $(shell $(GREP) "^name=" install.manifest | $(CUT) -d"=" -f2)
+VERSION    = $(shell $(GREP) "^version=" install.manifest | $(CUT) -d"=" -f2)
+FILES      = $(shell $(GREP) "^files=" install.manifest | $(CUT) -d"=" -f2)
+XPT_FILES  = $(patsubst %.idl,%.xpt,$(wildcard components/*.idl))
 
 all: clean xpi
 
@@ -67,18 +69,14 @@ clean:
 	$(RM) -f install.rdf
 	$(RM) -f components/*.xpt
 	$(RM) -rf components/cache
+	$(RM) -f xpidl_debug
 
 $(TLIB_CACHE):
 	$(MKDIR) $@
 
 %.xpt: %.idl $(TLIB_CACHE)
-ifeq ($(TYPELIB_PY),1)
-	$(XRSDK)/sdk/bin/typelib.py --cachedir=$(TLIB_CACHE) \
+	$(PY) $(XRSDK)/sdk/bin/typelib.py --cachedir=$(TLIB_CACHE) \
 		-I $(XRSDK)/idl -o $*.xpt $*.idl
-else
-	$(XRSDK)/bin/xpidl -m typelib -w -v \
-		-I $(XRSDK)/idl -e $*.xpt $*.idl
-endif
 
 xpt: $(XPT_FILES)
 
@@ -88,12 +86,5 @@ install.rdf: install.manifest
 rdf: install.rdf
 
 xpi: xpt rdf
-	$(ZIP) -r pdmts-$(VERSION)-fx.xpi \
-		chrome \
-		defaults \
-		modules \
-		chrome.manifest \
-		install.rdf \
-		components/*.js \
-		$(XPT_FILES)
+	$(ZIP) -r $(NAME)-$(VERSION).xpi $(FILES) $(XPT_FILES)
 
