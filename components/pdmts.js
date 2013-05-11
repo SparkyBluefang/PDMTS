@@ -16,7 +16,7 @@
  * The Initial Developer of the Original Code is 
  * Matthew Turnbull <sparky@bluefang-logic.com>.
  *
- * Portions created by the Initial Developer are Copyright (C) 2010
+ * Portions created by the Initial Developer are Copyright (C) 2013
  * the Initial Developer. All Rights Reserved.
  *
  * Contributor(s):
@@ -204,10 +204,21 @@ PDMTS.prototype =
 		let d;
 		if(req instanceof CI.nsIHttpChannel)
 		{
+			// First try X-Archive-Orig-Last-Modified (used on archive.org)
 			try
 			{
-				d = Date.parse(req.getResponseHeader("Last-Modified"));
-			} catch(e) { /* Ignore missing header errors */ }
+				d = Date.parse(req.getResponseHeader("X-Archive-Orig-Last-Modified"));
+			} catch(e) { /* Ignore missing/malformed header errors */ }
+
+			// Then try Last-Modified
+			if(!d)
+			{
+				try
+				{
+					d = Date.parse(req.getResponseHeader("Last-Modified"));
+				} catch(e) { /* Ignore missing/malformed header errors */ }
+			}
+
 			this.log(LOG_INFO, "net.http", null, f.path);
 		}
 		else if(req instanceof CI.nsIFileChannel)

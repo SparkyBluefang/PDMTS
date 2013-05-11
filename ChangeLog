@@ -1,4 +1,5 @@
 Version next
+* Add support for X-Archive-Orig-Last-Modified (used on archive.org).
 * Move to S4E build system. Support install.rdf localization.
 * Added locales ja-JP
 * Updated translations for: de, fr, pt-BR, sr, sv-SE, zh-CN
