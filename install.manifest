@@ -46,7 +46,7 @@ optionsURL=chrome://pdmts/content/prefs.xul
 defaultLocale=en-US
 
 Firefox=20.0|23.0a1
-SeaMonkey=2.17|2.18b3
+SeaMonkey=2.17|2.20a1
 
 # Build data
 name=pdmts
