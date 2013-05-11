@@ -16,7 +16,7 @@
 # The Initial Developer of the Original Code is 
 # Matthew Turnbull <sparky@bluefang-logic.com>.
 #
-# Portions created by the Initial Developer are Copyright (C) 2011
+# Portions created by the Initial Developer are Copyright (C) 2013
 # the Initial Developer. All Rights Reserved.
 #
 # Contributor(s):
@@ -35,15 +35,20 @@
 #
 # ***** END LICENSE BLOCK *****
 
-type=2
+# RDF metadata
 id=pdmts@caligonstudios.com
-version=2011.03.21.22
+version=2013.05.11.17a
+type=2
 creator=Sparky Bluefang
-optionsURL=chrome://pdmts/content/prefs.xul
 homepageURL=http://forums.mozillazine.org/viewtopic.php?f=48&t=1984565
+optionsURL=chrome://pdmts/content/prefs.xul
 
 defaultLocale=en-US
 
-Firefox=3.5|13.0a1
-SeaMonkey=2.0|2.10a1
+Firefox=20.0|23.0a1
+SeaMonkey=2.17|2.18b3
+
+# Build data
+name=pdmts
+files=chrome defaults chrome.manifest install.rdf components/*.js
 
